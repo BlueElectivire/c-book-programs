@@ -12,10 +12,13 @@ int bufp; // Next free position in buf
 int sp = 0; // Next free stack position
 double val[MAXVAL]; // Value Stack
 
+void duplicate(double []);
 int getch(void);
 int getop(char []);
 double pop(void);
+void ptop(void);
 void push(double);
+void swap(void);
 void ungetch(int);
 
 // Reverse Polish Calculator
@@ -67,6 +70,12 @@ int main(){
 	return 0;
 }
 
+// duplicate: Copies the value stack into the given array
+void duplicate(double new[]){
+	for (int i = 0;i < sp;i++)
+		new[i] = val[i];
+}
+
 // getch: Get a (possibly pushed back) character
 int getch(){
 	return (bufp > 0 ? buf[--bufp] : getchar());
@@ -106,12 +115,27 @@ double pop(){
 	return 0;
 }
 
+// ptop: Prints the top element of the stack without popping it
+void ptop(){
+	printf("The top element of the stack is %.8g\n", val[sp - 1]);
+}
+
 // push: push f onto value stack
 void push(double f){
 	if (sp < MAXVAL)
 		val[sp++] = f;
 	else
 		printf("Error: Stack full, cannot push %g\n", f);
+}
+
+// swap: Swaps the top two elements of the stack
+void swap(){
+	if (sp > 1){
+		int temp;
+		temp = val[sp - 1];
+		val[sp - 1] = val[sp - 2];
+		val[sp - 2] = temp;
+	}
 }
 
 // ungetch: Push character back on input
