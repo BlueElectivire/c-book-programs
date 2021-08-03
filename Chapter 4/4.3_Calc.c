@@ -20,6 +20,7 @@ void ungetch(int);
 
 // Reverse Polish Calculator
 int main(){
+	double op1; // First operand (for modulus)
 	double op2; // Second operand (for non commutitive operations)
 	char s[MAXOP]; // Input
 	int type; // Type of input
@@ -43,7 +44,16 @@ int main(){
 				if ((op2 = pop()) != 0.0)
 					push(pop() / op2);
 				else
-					printf("Error: Division by zero/n");
+					printf("Error: Division by zero\n");
+				break;
+			case '%':
+				if ((op2 = pop()) != 0.0)
+					if ((op1 = pop()) == (int)op1 && op2 == (int)op2)
+						push ((int)op1 % (int)op2);
+					else
+						printf("Error: Non-integer operands for modulus\n");
+				else
+					printf("Error: Division by zero\n");
 				break;
 			case '\n':
 				printf("\t%.8g\n", pop());
@@ -72,6 +82,11 @@ int getop(char s[]){
 		return c; // Not a number
 
 	i = 1;
+	if (c == '-')
+		if (isdigit(c = getch())) // Negative number
+			s[i++] = c;
+		else // Subtraction operand
+			return '-';
 	if (isdigit(c)) // Collect integer part
 		while (isdigit(s[i++] = c = getch()));
 	if (c == '.') // Collect fraction part
