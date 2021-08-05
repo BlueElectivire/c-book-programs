@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -7,6 +8,12 @@
 #define MAXVAL 100 // Maximum depth of val stack
 #define NUMBER '0' // Signal that a number was found
 
+enum FUNCTIONS { // Math header functions
+	SIN = 1,
+	EXP,
+	POW
+};
+
 char buf[BUFSIZE]; // Buffer for ungetch
 int bufp; // Next free position in buf
 int sp = 0; // Next free stack position
@@ -14,6 +21,7 @@ double val[MAXVAL]; // Value Stack
 
 void duplicate(double []);
 int getch(void);
+int getf(char);
 int getop(char []);
 double pop(void);
 void ptop(void);
@@ -58,6 +66,16 @@ int main(){
 				else
 					printf("Error: Division by zero\n");
 				break;
+			case SIN:
+				push(sin(pop()));
+				break;
+			case EXP:
+				push(exp(pop()));
+				break;
+			case POW:
+				op2 = pop();
+				push(pow(pop(), op2));
+				break;
 			case '\n':
 				printf("\t%.8g\n", pop());
 				break;
@@ -81,6 +99,40 @@ int getch(){
 	return (bufp > 0 ? buf[--bufp] : getchar());
 }
 
+// getf: Gets a math.h function from input and returns its value indexed by the enum
+int getf(char first){
+	char c;
+	switch (first){
+		case 'S':
+		case 's':
+			if ((c = getchar()) != 'I' && c != 'i')
+				return -1;
+			if ((c = getchar()) != 'N' && c != 'n')
+				return -1;
+			return SIN;
+			break;
+		case 'E':
+		case 'e':
+			if ((c = getchar()) != 'X' && c != 'x')
+				return -1;
+			if ((c = getchar()) != 'P' && c != 'p')
+				return -1;
+			return EXP;
+			break;
+		case 'P':
+		case 'p':
+			if ((c = getchar()) != 'O' && c != 'o')
+				return -1;
+			if ((c = getchar()) != 'W' && c != 'w')
+				return -1;
+			return POW;
+			break;
+		default:
+			return first;
+			break;
+	}
+}
+
 // getop: Get next operator or numeric operand
 int getop(char s[]){
 	int i, c;
@@ -88,7 +140,7 @@ int getop(char s[]){
 
 	s[1] = '\0';
 	if (!isdigit(c) && c != '.')
-		return c; // Not a number
+		return getf(c); // Not a number
 
 	i = 1;
 	if (c == '-')
