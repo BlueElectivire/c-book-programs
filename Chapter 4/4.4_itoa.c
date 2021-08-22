@@ -20,6 +20,7 @@ int main(){
 	return 0;
 }
 
+// itoa: Returns integer input as a string
 void itoa(int input, char output[]){
 	if (input < 0){
 		output[i++] = '-';
