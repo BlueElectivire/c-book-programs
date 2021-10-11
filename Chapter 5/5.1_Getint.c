@@ -1,20 +1,22 @@
 #include <stdio.h>
 #include <ctype.h>
+#include <math.h>
 
 #define BUFSIZE 100 // Buffer size
 
 char buf[BUFSIZE]; // Buffer for ungetch
 int bufp; // Next free position in buf
 
-int getint(int *pn);
+int getint(int *);
+int getfloat(float *);
 
 int main() {
-	int num, *np;
+	float num, *np;
 	np = &num;
 	int state;
-	while (bufp < BUFSIZE &&  (state = getint(np)) != EOF)
+	while (bufp < BUFSIZE &&  (state = getfloat(np)) != EOF)
 		if (state > 0)
-			printf("Value is %d\n", *np);
+			printf("Value is %f\n", *np);
 		else {
 			printf("Not a number\n");
 			break;
@@ -26,8 +28,8 @@ int main() {
 int getch(void);
 void ungetch(int);
 
-// getint: get next integer from input into *pn
-int getint(int *pn){
+// getint: get next integer from input into *ip
+int getint(int *ip){
 	int c, sign;
 
 	while (isspace(c = getch())); //Skip whitespace
@@ -44,9 +46,41 @@ int getint(int *pn){
 		ungetch(c);
 		return 0;
 	}
-	for (*pn = 0; isdigit(c); c = getch())
-		*pn = 10 * *pn + (c - '0');
-	*pn *= sign;
+	for (*ip = 0; isdigit(c); c = getch())
+		*ip = 10 * *ip + (c - '0');
+	*ip *= sign;
+	if (c != EOF)
+		ungetch(c);
+	return c;
+}
+
+// getfloat: get next float from input to *fp
+int getfloat(float *fp){
+	int c, sign;
+
+	while (isspace(c = getch())); //Skip whitespace
+	
+	if (!isdigit(c) && c != EOF && c != '+' && c != '-'){
+		ungetch(c); // NaN
+		return 0;
+	}
+
+	sign = (c == '-') ? -1 : 1;
+	if (c == '+' || c == '-')
+		c = getch();
+	if (!isdigit(c)){ // NaN
+		ungetch(c);
+		return 0;
+	}
+	for (*fp = 0; isdigit(c); c = getch())
+		*fp = 10 * *fp + (c - '0');
+	if (c == '.')
+		c = getch();
+		for (int i = 1; isdigit(c); i++){
+			*fp += pow(10, -i) * (c - '0');
+			c = getch();
+		}
+	*fp *= sign;
 	if (c != EOF)
 		ungetch(c);
 	return c;
